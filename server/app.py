@@ -51,6 +51,7 @@ from server.routers import (
     cost_estimation,
     custom_providers,
     files,
+    fork_model_pricing,
     fork_users,
     generate,
     grids,
@@ -515,6 +516,7 @@ app.include_router(characters.router, prefix="/api/v1", tags=["角色管理"])
 app.include_router(scenes.router, prefix="/api/v1", tags=["场景管理"])
 app.include_router(props.router, prefix="/api/v1", tags=["道具管理"])
 app.include_router(files.router, prefix="/api/v1", tags=["文件管理"])
+app.include_router(fork_model_pricing.router, prefix="/api/v1", tags=["Fork 模型价格"])
 app.include_router(generate.router, prefix="/api/v1", tags=["生成"])
 app.include_router(versions.router, prefix="/api/v1", tags=["版本管理"])
 app.include_router(usage.router, prefix="/api/v1", tags=["费用统计"])

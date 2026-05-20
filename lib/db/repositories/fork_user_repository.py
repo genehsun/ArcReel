@@ -13,7 +13,7 @@ from sqlalchemy import select, update
 
 from lib.db.base import dt_to_iso, utc_now
 from lib.db.models.user import User
-from lib.db.repositories.base import BaseRepository
+from lib.db.repositories.base import BaseRepository, rowcount
 
 
 def _row_to_dict(row: User) -> dict[str, Any]:
@@ -63,14 +63,14 @@ class UserRepository(BaseRepository):
         result = await self.session.execute(
             update(User).where(User.id == user_id).values(role=role, updated_at=utc_now())
         )
-        return result.rowcount > 0
+        return rowcount(result) > 0
 
     async def set_active(self, user_id: str, is_active: bool) -> bool:
         result = await self.session.execute(
             update(User).where(User.id == user_id).values(is_active=is_active, updated_at=utc_now())
         )
-        return result.rowcount > 0
+        return rowcount(result) > 0
 
     async def delete(self, user_id: str) -> bool:
         result = await self.session.execute(sa_delete(User).where(User.id == user_id))
-        return result.rowcount > 0
+        return rowcount(result) > 0

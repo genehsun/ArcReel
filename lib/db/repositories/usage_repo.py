@@ -12,6 +12,7 @@ from lib.custom_provider import is_custom_provider, parse_provider_id
 from lib.db.base import DEFAULT_USER_ID, dt_to_iso, utc_now
 from lib.db.models.api_call import ApiCall
 from lib.db.repositories.base import BaseRepository
+from lib.fork_model_pricing import calculate_fork_price_override
 from lib.providers import PROVIDER_GEMINI, CallType
 
 
@@ -171,31 +172,47 @@ class UsageRepository(BaseRepository):
             input_tokens = (image_input_tokens or 0) + (text_input_tokens or 0)
             output_tokens = (image_output_tokens or 0) + (text_output_tokens or 0)
 
-        if cost_amount is not None:
-            final_cost_amount = cost_amount
-            final_currency = currency or row.currency or "USD"
-        elif status == "success":
-            final_cost_amount, final_currency = cost_calculator.calculate_cost(
+        if status == "success":
+            fork_price_override = await calculate_fork_price_override(
+                self.session,
                 provider=effective_provider,
                 call_type=row.call_type,  # type: ignore[arg-type]
                 model=row.model,
-                resolution=row.resolution,
-                aspect_ratio=row.aspect_ratio,
-                duration_seconds=row.duration_seconds,
-                generate_audio=bool(row.generate_audio),
-                usage_tokens=usage_tokens,
-                service_tier=service_tier,
                 input_tokens=input_tokens,
                 output_tokens=output_tokens,
-                quality=quality,
-                image_input_tokens=image_input_tokens,
-                image_output_tokens=image_output_tokens,
-                text_input_tokens=text_input_tokens,
-                text_output_tokens=text_output_tokens,
-                custom_price_input=custom_price_input,
-                custom_price_output=custom_price_output,
-                custom_currency=custom_currency,
+                usage_tokens=usage_tokens,
+                duration_seconds=row.duration_seconds,
             )
+            if fork_price_override is not None:
+                final_cost_amount, final_currency = fork_price_override
+            elif cost_amount is not None:
+                final_cost_amount = cost_amount
+                final_currency = currency or row.currency or "USD"
+            else:
+                final_cost_amount, final_currency = cost_calculator.calculate_cost(
+                    provider=effective_provider,
+                    call_type=row.call_type,  # type: ignore[arg-type]
+                    model=row.model,
+                    resolution=row.resolution,
+                    aspect_ratio=row.aspect_ratio,
+                    duration_seconds=row.duration_seconds,
+                    generate_audio=bool(row.generate_audio),
+                    usage_tokens=usage_tokens,
+                    service_tier=service_tier,
+                    input_tokens=input_tokens,
+                    output_tokens=output_tokens,
+                    quality=quality,
+                    image_input_tokens=image_input_tokens,
+                    image_output_tokens=image_output_tokens,
+                    text_input_tokens=text_input_tokens,
+                    text_output_tokens=text_output_tokens,
+                    custom_price_input=custom_price_input,
+                    custom_price_output=custom_price_output,
+                    custom_currency=custom_currency,
+                )
+        elif cost_amount is not None:
+            final_cost_amount = cost_amount
+            final_currency = currency or row.currency or "USD"
 
         error_truncated = error_message[:500] if error_message else None
 
