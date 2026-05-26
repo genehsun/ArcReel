@@ -32,6 +32,7 @@ from fastapi.sse import ServerSentEvent
 
 from lib.agent_profile import agent_profile_dir
 from lib.app_data_dir import app_data_dir
+from lib.profile_manifest import ContentMode, resolve_profile_files_for_mode
 from lib.project_manager import ProjectManager
 from server.agent_runtime.message_utils import extract_plain_user_content
 from server.agent_runtime.models import SessionMeta, SessionStatus
@@ -920,6 +921,8 @@ class AssistantService:
     # those keys so adding a user-invocable skill without translations fails CI.
     _SKILL_ICONS: dict[str, str] = {
         "manga-workflow": "clapperboard",
+        "director-master": "clapperboard",
+        "screenwriting-master": "film",
         "generate-storyboard": "images",
         "generate-grid": "grid-2x2",
         "generate-video": "film",
@@ -929,53 +932,47 @@ class AssistantService:
 
     def list_available_skills(self, project_name: str | None = None) -> list[dict[str, str]]:
         """List available skills."""
+        content_mode: ContentMode = "narration"
         if project_name:
-            self.pm.get_project_path(project_name)
+            project_dir = self.pm.get_project_path(project_name)
+            resolve_content_mode = getattr(self.pm, "_resolve_content_mode", None)
+            if resolve_content_mode:
+                content_mode = resolve_content_mode(project_dir)
 
-        source_roots = {
-            "agent": agent_profile_dir() / ".claude" / "skills",
-        }
+        profile_dir = agent_profile_dir()
+        profile_files = resolve_profile_files_for_mode(profile_dir, content_mode)
 
         skills: list[dict[str, str]] = []
         seen_keys: set[str] = set()
 
-        for scope, root in source_roots.items():
-            if not root.exists() or not root.is_dir():
+        for logical_rel, source_rel in sorted(profile_files.items()):
+            parts = logical_rel.split("/")
+            if len(parts) != 4 or parts[0] != ".claude" or parts[1] != "skills" or parts[3] != "SKILL.md":
                 continue
+
+            skill_file = profile_dir / source_rel
             try:
-                directories = sorted(root.iterdir())
+                metadata = self._load_skill_metadata(skill_file, parts[2])
             except OSError:
                 continue
 
-            for skill_dir in directories:
-                if not skill_dir.is_dir():
-                    continue
-                skill_file = skill_dir / "SKILL.md"
-                if not skill_file.exists():
-                    continue
+            if not metadata["user_invocable"]:
+                continue
 
-                try:
-                    metadata = self._load_skill_metadata(skill_file, skill_dir.name)
-                except OSError:
-                    continue
-
-                if not metadata["user_invocable"]:
-                    continue
-
-                key = f"{scope}:{metadata['name']}"
-                if key in seen_keys:
-                    continue
-                seen_keys.add(key)
-                skill_entry: dict[str, Any] = {
-                    "name": metadata["name"],
-                    "description": metadata["description"],
-                    "scope": scope,
-                    "path": str(skill_file),
-                }
-                icon = self._SKILL_ICONS.get(metadata["name"])
-                if icon:
-                    skill_entry["icon"] = icon
-                skills.append(skill_entry)
+            key = f"agent:{metadata['name']}"
+            if key in seen_keys:
+                continue
+            seen_keys.add(key)
+            skill_entry: dict[str, Any] = {
+                "name": metadata["name"],
+                "description": metadata["description"],
+                "scope": "agent",
+                "path": str(skill_file),
+            }
+            icon = self._SKILL_ICONS.get(metadata["name"])
+            if icon:
+                skill_entry["icon"] = icon
+            skills.append(skill_entry)
 
         return skills
 

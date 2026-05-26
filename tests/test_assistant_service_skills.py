@@ -40,3 +40,26 @@ class TestListAvailableSkills:
 
         skills = service.list_available_skills()
         assert skills == []
+
+    def test_lists_mode_specific_skill_variants_via_profile_manifest(self, tmp_path):
+        """Should list the logical SKILL.md selected by profile manifest mapping."""
+        skill_dir = tmp_path / "agent_runtime_profile" / ".claude" / "skills" / "director-master"
+        skill_dir.mkdir(parents=True)
+        (skill_dir / "SKILL.drama.md").write_text(
+            "---\nname: director-master\ndescription: Drama director\n---\n",
+            encoding="utf-8",
+        )
+        (skill_dir / "SKILL.narration.md").write_text(
+            "---\nname: director-master\ndescription: Narration director\n---\n",
+            encoding="utf-8",
+        )
+
+        with patch.object(AssistantService, "__init__", lambda self, *a, **kw: None):
+            service = AssistantService.__new__(AssistantService)
+            service.project_root = tmp_path
+            from lib.project_manager import ProjectManager
+
+            service.pm = ProjectManager(tmp_path / "projects")
+
+        skills = service.list_available_skills()
+        assert any(s["name"] == "director-master" and s["description"] == "Narration director" for s in skills)

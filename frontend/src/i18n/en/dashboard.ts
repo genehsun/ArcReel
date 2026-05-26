@@ -1078,6 +1078,8 @@ export default {
   // Skill display names (single source of truth: user-invocable SKILL.md files
   // under agent_runtime_profile/.claude/skills/; tests/test_frontend_skill_i18n.py enforces parity)
   'skill_name_manga_workflow': 'Video workflow',
+  'skill_name_director_master': 'Director master',
+  'skill_name_screenwriting_master': 'Screenwriting master',
   'skill_name_generate_storyboard': 'Generate storyboard',
   'skill_name_generate_grid': 'Generate grid',
   'skill_name_generate_video': 'Generate video',
