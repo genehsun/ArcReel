@@ -1,0 +1,58 @@
+// fork-private — minimal English translations for user-roles UI
+const fork = {
+  access: {
+    role: {
+      admin: 'Admin',
+      user: 'User',
+    },
+    forbidden: {
+      title: 'Access Denied',
+      hint: 'You do not have permission to view this page.',
+    },
+    project: {
+      owner_label: 'Owner',
+      owner_unknown: 'Unassigned',
+    },
+    users: {
+      nav: 'Users',
+      title: 'User Management',
+      empty: 'No users yet. Create your first one below.',
+      create: 'Create User',
+      create_submit: 'Create',
+      column_username: 'Username',
+      column_role: 'Role',
+      column_created: 'Created',
+      column_active: 'Active',
+      column_actions: 'Actions',
+      delete: 'Delete',
+      delete_confirm: 'Delete user "{{name}}"?',
+      username_placeholder: '3-32 chars, lowercase / digits / _ / -',
+      shared_password_hint: 'All users share the AUTH_PASSWORD environment value. There is no per-user password.',
+      created_toast: 'User "{{name}}" created.',
+      deleted_toast: 'User "{{name}}" deleted.',
+    },
+  },
+  pricing: {
+    nav: 'Model Pricing',
+    title: 'Model Pricing',
+    kicker: 'Billing Rules',
+    desc: 'Set local price overrides for providers with configured credentials. Disabled or empty rules fall back to built-in prices.',
+    no_configured_providers: 'No providers with configured credentials yet. Configure a usable credential under Providers or Agents first.',
+    models_count: 'models',
+    enable_override: 'Enable override',
+    currency: 'Currency',
+    call_type_text: 'Text',
+    call_type_image: 'Image',
+    call_type_video: 'Video',
+    input_per_million: 'Input / 1M',
+    output_per_million: 'Output / 1M',
+    usage_per_million: 'Usage / 1M',
+    per_call: 'Per call',
+    per_second: 'Per second',
+    status_builtin: 'Built-in price',
+    status_custom: 'Custom price',
+    status_no_builtin: 'No built-in price',
+    saved: 'Model pricing saved',
+  },
+};
+export default fork;

@@ -33,7 +33,7 @@ from fastapi.sse import ServerSentEvent
 
 from lib.agent_profile import agent_profile_dir
 from lib.app_data_dir import app_data_dir
-from lib.profile_manifest import VALID_CONTENT_MODES
+from lib.profile_manifest import ContentMode, VALID_CONTENT_MODES, resolve_profile_files_for_mode
 from lib.project_manager import ProjectManager
 from server.agent_runtime.message_utils import extract_plain_user_content
 from server.agent_runtime.models import SessionMeta, SessionStatus
@@ -917,6 +917,8 @@ class AssistantService:
     # those keys so adding a user-invocable skill without translations fails CI.
     _SKILL_ICONS: dict[str, str] = {
         "manga-workflow": "clapperboard",
+        "director-master": "clapperboard",
+        "screenwriting-master": "film",
         "generate-storyboard": "images",
         "generate-grid": "grid-2x2",
         "generate-video": "film",
@@ -926,85 +928,71 @@ class AssistantService:
 
     def list_available_skills(self, project_name: str | None = None) -> list[dict[str, str]]:
         """List available skills."""
+        content_mode: ContentMode = "narration"
         if project_name:
-            self.pm.get_project_path(project_name)
+            project_dir = self.pm.get_project_path(project_name)
+            resolve_content_mode = getattr(self.pm, "_resolve_content_mode", None)
+            if resolve_content_mode:
+                content_mode = resolve_content_mode(project_dir)
 
-        source_roots = {
-            "agent": agent_profile_dir() / ".claude" / "skills",
-        }
+        profile_dir = agent_profile_dir()
+        profile_files = resolve_profile_files_for_mode(profile_dir, content_mode)
 
         skills: list[dict[str, str]] = []
         seen_keys: set[str] = set()
 
-        for scope, root in source_roots.items():
-            if not root.exists() or not root.is_dir():
+        for logical_rel, source_rel in sorted(profile_files.items()):
+            parts = logical_rel.split("/")
+            if len(parts) != 4 or parts[0] != ".claude" or parts[1] != "skills" or parts[3] != "SKILL.md":
                 continue
+
+            skill_file = profile_dir / source_rel
+            if source_rel != logical_rel and not self._variant_skill_is_consistent(profile_dir / parts[0] / parts[1] / parts[2]):
+                continue
+
             try:
-                directories = sorted(root.iterdir())
+                metadata = self._load_skill_metadata(skill_file, parts[2])
             except OSError:
                 continue
+            if not metadata["user_invocable"]:
+                continue
 
-            for skill_dir in directories:
-                if not skill_dir.is_dir():
-                    continue
-                skill_file = self._resolve_skill_entry_file(skill_dir)
-                if skill_file is None:
-                    continue
-
-                try:
-                    metadata = self._load_skill_metadata(skill_file, skill_dir.name)
-                except OSError:
-                    continue
-
-                if not metadata["user_invocable"]:
-                    continue
-
-                key = f"{scope}:{metadata['name']}"
-                if key in seen_keys:
-                    continue
-                seen_keys.add(key)
-                skill_entry: dict[str, Any] = {
-                    "name": metadata["name"],
-                    "description": metadata["description"],
-                    "scope": scope,
-                    "path": str(skill_file),
-                }
-                icon = self._SKILL_ICONS.get(metadata["name"])
-                if icon:
-                    skill_entry["icon"] = icon
-                skills.append(skill_entry)
+            key = f"agent:{metadata['name']}"
+            if key in seen_keys:
+                continue
+            seen_keys.add(key)
+            skill_entry: dict[str, Any] = {
+                "name": metadata["name"],
+                "description": metadata["description"],
+                "scope": "agent",
+                "path": str(skill_file),
+            }
+            icon = self._SKILL_ICONS.get(metadata["name"])
+            if icon:
+                skill_entry["icon"] = icon
+            skills.append(skill_entry)
 
         return skills
 
     @staticmethod
-    def _resolve_skill_entry_file(skill_dir: Path) -> Path | None:
-        # profile 端的 content_mode 变体（SKILL.narration.md / SKILL.drama.md）只在 sync
-        # 进项目目录时才会被物化为 SKILL.md；列表接口直接扫 profile 时必须自己识别变体，
-        # 否则 manga-workflow 这类 variant-only skill 永远拿不到。
-        #
-        # 查找契约与 tests/test_frontend_skill_i18n.py:_find_skill_md 保持一致：
-        # 用 is_file 严格筛文件、按 sorted(VALID_CONTENT_MODES) 显式枚举有效模式、
-        # 校验所有变体的 user-invocable 状态一致。不一致时 warning 后返回 None
-        # 跳过该 skill——避免列表里随机选到某个 mode 的 frontmatter 导致行为漂移。
-        common = skill_dir / "SKILL.md"
-        if common.is_file():
-            return common
+    def _variant_skill_is_consistent(skill_dir: Path) -> bool:
+        """Variant-only skills must agree on user-invocable across content modes."""
         variants = [skill_dir / f"SKILL.{mode}.md" for mode in sorted(VALID_CONTENT_MODES)]
         existing = [v for v in variants if v.is_file()]
-        if not existing:
-            return None
+        if len(existing) <= 1:
+            return True
         try:
             states = {AssistantService._load_skill_metadata(v, skill_dir.name)["user_invocable"] for v in existing}
         except OSError:
-            return None
+            return False
         if len(states) > 1:
             logger.warning(
                 "skill %s 各 content_mode 变体的 user-invocable 不一致，跳过；"
                 "请保证所有 SKILL.<mode>.md frontmatter 的 user-invocable 字段相同",
                 skill_dir.name,
             )
-            return None
-        return existing[0]
+            return False
+        return True
 
     @staticmethod
     def _load_skill_metadata(skill_file: Path, fallback_name: str) -> dict[str, Any]:

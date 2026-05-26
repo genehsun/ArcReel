@@ -8,4 +8,5 @@ export * from "./api-key";
 export * from "./provider";
 export * from "./custom-provider";
 export * from "./cost";
+export * from "./fork-model-pricing";
 export * from "./reference-video";

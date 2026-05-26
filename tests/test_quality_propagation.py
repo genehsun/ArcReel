@@ -225,7 +225,10 @@ class TestUsageRepositoryQualityToCostCalculator:
         mock_session.execute = AsyncMock(return_value=mock_result)
         mock_session.commit = AsyncMock()
 
-        with patch("lib.db.repositories.usage_repo.cost_calculator") as mock_calc:
+        with (
+            patch("lib.db.repositories.usage_repo.calculate_fork_price_override", new=AsyncMock(return_value=None)),
+            patch("lib.db.repositories.usage_repo.cost_calculator") as mock_calc,
+        ):
             mock_calc.calculate_cost.return_value = (0.02, "USD")
 
             from lib.db.repositories.usage_repo import UsageRepository
@@ -265,7 +268,10 @@ class TestUsageRepositoryQualityToCostCalculator:
         mock_session.execute = AsyncMock(return_value=mock_result)
         mock_session.commit = AsyncMock()
 
-        with patch("lib.db.repositories.usage_repo.cost_calculator") as mock_calc:
+        with (
+            patch("lib.db.repositories.usage_repo.calculate_fork_price_override", new=AsyncMock(return_value=None)),
+            patch("lib.db.repositories.usage_repo.cost_calculator") as mock_calc,
+        ):
             mock_calc.calculate_cost.return_value = (0.02, "USD")
 
             from lib.db.repositories.usage_repo import UsageRepository

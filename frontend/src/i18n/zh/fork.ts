@@ -1,0 +1,58 @@
+// fork-private — 用户角色相关界面文案
+const fork = {
+  access: {
+    role: {
+      admin: '管理员',
+      user: '普通用户',
+    },
+    forbidden: {
+      title: '无权访问',
+      hint: '当前角色无法访问此页面。',
+    },
+    project: {
+      owner_label: '拥有者',
+      owner_unknown: '未分配',
+    },
+    users: {
+      nav: '用户管理',
+      title: '用户管理',
+      empty: '还没有用户，先在下方创建一个吧。',
+      create: '新建用户',
+      create_submit: '创建',
+      column_username: '用户名',
+      column_role: '角色',
+      column_created: '创建时间',
+      column_active: '启用',
+      column_actions: '操作',
+      delete: '删除',
+      delete_confirm: '确定删除用户「{{name}}」吗？',
+      username_placeholder: '3-32 位小写字母/数字/_/-',
+      shared_password_hint: '本期所有用户共享 AUTH_PASSWORD 环境变量，暂不支持单独密码。',
+      created_toast: '用户「{{name}}」已创建。',
+      deleted_toast: '用户「{{name}}」已删除。',
+    },
+  },
+  pricing: {
+    nav: '模型价格',
+    title: '模型价格',
+    kicker: '计费规则',
+    desc: '为已配置密钥的供应商设置本地价格覆盖；未启用或未填写价格时使用内置价格。',
+    no_configured_providers: '暂无已配置密钥的供应商。请先在「供应商」或「智能体」页面配置可用凭证。',
+    models_count: '个模型',
+    enable_override: '启用覆盖',
+    currency: '币种',
+    call_type_text: '文本',
+    call_type_image: '图片',
+    call_type_video: '视频',
+    input_per_million: '输入 / 百万',
+    output_per_million: '输出 / 百万',
+    usage_per_million: '总量 / 百万',
+    per_call: '每次调用',
+    per_second: '每秒',
+    status_builtin: '内置价格',
+    status_custom: '自定义价格',
+    status_no_builtin: '无内置价格',
+    saved: '模型价格配置已保存',
+  },
+};
+export default fork;

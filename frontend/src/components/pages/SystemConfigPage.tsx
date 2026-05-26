@@ -6,20 +6,24 @@ import {
   BarChart3,
   Bot,
   ChevronLeft,
+  CircleDollarSign,
   Film,
   Info,
   KeyRound,
   Languages,
   Plug,
+  Users as UsersIcon,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useConfigStatusStore } from "@/stores/config-status-store";
 import { AgentConfigTab } from "./AgentConfigTab";
 import { ApiKeysTab } from "./ApiKeysTab";
 import { AboutSection } from "./settings/AboutSection";
+import { ForkModelPricingSection } from "./settings/ForkModelPricingSection";
 import { MediaModelSection } from "./settings/MediaModelSection";
 import { ProviderSection } from "./ProviderSection";
 import { UsageStatsSection } from "./settings/UsageStatsSection";
+import { ForkUsersSection } from "./settings/ForkUsersSection"; // fork-private
 import {
   SUPPORTED_LANGUAGES,
   LANGUAGE_DISPLAY_LABELS,
@@ -33,7 +37,7 @@ import {
 // Types
 // ---------------------------------------------------------------------------
 
-type SettingsSection = "agent" | "providers" | "media" | "usage" | "api-keys" | "about";
+type SettingsSection = "agent" | "providers" | "media" | "pricing" | "usage" | "api-keys" | "users" | "about";
 
 interface SectionDef {
   id: SettingsSection;
@@ -57,6 +61,7 @@ const SECTION_GROUPS: SectionGroup[] = [
       { id: "providers", labelKey: "dashboard:providers", Icon: Plug },
       { id: "agent", labelKey: "dashboard:agents", Icon: Bot },
       { id: "media", labelKey: "dashboard:models", Icon: Film },
+      { id: "pricing", labelKey: "fork:pricing.nav", Icon: CircleDollarSign },
     ],
   },
   {
@@ -64,6 +69,7 @@ const SECTION_GROUPS: SectionGroup[] = [
     items: [
       { id: "usage", labelKey: "dashboard:usage", Icon: BarChart3 },
       { id: "api-keys", labelKey: "dashboard:api_keys", Icon: KeyRound },
+      { id: "users", labelKey: "fork:access.users.title", Icon: UsersIcon }, // fork-private (admin only)
     ],
   },
   {
@@ -77,7 +83,7 @@ const SECTION_GROUPS: SectionGroup[] = [
 // ---------------------------------------------------------------------------
 
 export function SystemConfigPage() {
-  const { t, i18n } = useTranslation(["common", "dashboard"]);
+  const { t, i18n } = useTranslation(["common", "dashboard", "fork"]);
   const [location, navigate] = useLocation();
   const search = useSearch();
 
@@ -85,8 +91,10 @@ export function SystemConfigPage() {
     const section = new URLSearchParams(search).get("section");
     if (section === "agent") return "agent";
     if (section === "media") return "media";
+    if (section === "pricing") return "pricing";
     if (section === "usage") return "usage";
     if (section === "api-keys") return "api-keys";
+    if (section === "users") return "users";
     if (section === "about") return "about";
     return "providers";
   }, [search]);
@@ -299,12 +307,14 @@ export function SystemConfigPage() {
 
               {activeSection === "agent" && <AgentConfigTab visible />}
               {activeSection === "media" && <MediaModelSection />}
+              {activeSection === "pricing" && <ForkModelPricingSection />}
               {activeSection === "usage" && <UsageStatsSection />}
               {activeSection === "api-keys" && (
                 <div className="p-6">
                   <ApiKeysTab />
                 </div>
               )}
+              {activeSection === "users" && <ForkUsersSection />}
               {activeSection === "about" && <AboutSection />}
             </div>
           )}

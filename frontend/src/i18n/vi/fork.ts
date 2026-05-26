@@ -1,0 +1,58 @@
+// fork-private — Vietnamese translations
+const fork = {
+  access: {
+    role: {
+      admin: 'Quản trị',
+      user: 'Người dùng',
+    },
+    forbidden: {
+      title: 'Không có quyền',
+      hint: 'Bạn không được phép xem trang này.',
+    },
+    project: {
+      owner_label: 'Chủ sở hữu',
+      owner_unknown: 'Chưa phân công',
+    },
+    users: {
+      nav: 'Quản lý người dùng',
+      title: 'Quản lý người dùng',
+      empty: 'Chưa có người dùng nào, hãy tạo bên dưới.',
+      create: 'Tạo người dùng',
+      create_submit: 'Tạo',
+      column_username: 'Tên đăng nhập',
+      column_role: 'Vai trò',
+      column_created: 'Thời gian tạo',
+      column_active: 'Hoạt động',
+      column_actions: 'Thao tác',
+      delete: 'Xóa',
+      delete_confirm: 'Xóa người dùng "{{name}}"?',
+      username_placeholder: '3-32 ký tự, chữ thường / số / _ / -',
+      shared_password_hint: 'Tất cả người dùng hiện chia sẻ AUTH_PASSWORD; chưa hỗ trợ mật khẩu riêng.',
+      created_toast: 'Đã tạo người dùng "{{name}}".',
+      deleted_toast: 'Đã xóa người dùng "{{name}}".',
+    },
+  },
+  pricing: {
+    nav: 'Giá mô hình',
+    title: 'Giá mô hình',
+    kicker: 'Quy tắc tính phí',
+    desc: 'Đặt giá ghi đè cục bộ cho nhà cung cấp đã có thông tin xác thực. Quy tắc tắt hoặc để trống sẽ dùng giá tích hợp.',
+    no_configured_providers: 'Chưa có nhà cung cấp nào có thông tin xác thực. Hãy cấu hình tại Nhà cung cấp hoặc Tác nhân trước.',
+    models_count: 'mô hình',
+    enable_override: 'Bật ghi đè',
+    currency: 'Tiền tệ',
+    call_type_text: 'Văn bản',
+    call_type_image: 'Ảnh',
+    call_type_video: 'Video',
+    input_per_million: 'Đầu vào / 1M',
+    output_per_million: 'Đầu ra / 1M',
+    usage_per_million: 'Tổng dùng / 1M',
+    per_call: 'Mỗi lượt gọi',
+    per_second: 'Mỗi giây',
+    status_builtin: 'Giá tích hợp',
+    status_custom: 'Giá tùy chỉnh',
+    status_no_builtin: 'Chưa có giá tích hợp',
+    saved: 'Đã lưu giá mô hình',
+  },
+};
+export default fork;

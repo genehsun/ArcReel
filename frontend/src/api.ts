@@ -44,6 +44,8 @@ import type {
   ReferenceVideoUnit,
   ReferenceResource,
   TransitionType,
+  ForkModelPricingConfig,
+  SaveForkModelPricingRequest,
 } from "@/types";
 import type { GenerationMode } from "@/utils/generation-mode";
 import type { GridGeneration } from "@/types/grid";
@@ -360,6 +362,19 @@ class API {
     return this.request("/system/config", {
       method: "PATCH",
       body: JSON.stringify(patch),
+    });
+  }
+
+  static async getForkModelPricingConfig(): Promise<ForkModelPricingConfig> {
+    return this.request("/fork/model-pricing");
+  }
+
+  static async saveForkModelPricingConfig(
+    data: SaveForkModelPricingRequest,
+  ): Promise<ForkModelPricingConfig> {
+    return this.request("/fork/model-pricing", {
+      method: "PUT",
+      body: JSON.stringify(data),
     });
   }
 

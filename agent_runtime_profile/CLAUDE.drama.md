@@ -118,6 +118,8 @@ agent session 的当前工作目录（cwd）已绑定到当前项目根，**所�
 | generate-grid | `/generate-grid` | 生成宫格分镜图（grid 模式：按 segment_break 分组的链式宫格） |
 | generate-video | `/generate-video` | 生成视频 |
 | compose-video | `/compose-video` | 视频后期合成（BGM、片头片尾、多集拼接，ffmpeg） |
+| director-master | `/director-master` | 导演工作流：导演定调、镜头语言、节奏规划、分镜拆解、prompt 落地 |
+| screenwriting-master | `/screenwriting-master` | 编剧工作流：故事概念、人物弧光、结构大纲、场景拆解、剧本医生 |
 
 ## 快速开始
 
